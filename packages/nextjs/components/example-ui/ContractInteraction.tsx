@@ -1,14 +1,9 @@
 import { useEffect, useState } from "react";
-import { CopyIcon } from "./assets/CopyIcon";
-import { DiamondIcon } from "./assets/DiamondIcon";
-import { HareIcon } from "./assets/HareIcon";
 import { BigNumber, ethers } from "ethers";
-import { goerli, hardhat, localhost } from "wagmi/chains";
-import { ArrowSmallRightIcon } from "@heroicons/react/24/outline";
+import { goerli } from "wagmi/chains";
 import { Spinner } from "~~/components/Spinner";
 import { AddressInput } from "~~/components/scaffold-eth/Input/AddressInput";
 import { EtherInput } from "~~/components/scaffold-eth/Input/EtherInput";
-import { IntegerInput } from "~~/components/scaffold-eth/Input/IntegerInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { getLocalProvider } from "~~/utils/scaffold-eth";
 
@@ -34,7 +29,7 @@ export const ContractInteraction = () => {
   const [paymentPerBlockString, setPaymentPerBlockString] = useState("");
 
   const [paymentPerBlock, setPaymentPerBlock] = useState<BigNumber>(BigNumber.from(0));
-  const [blockNumber, setBlockNumber] = useState<number | undefined>(null | undefined);
+  const [blockNumber, setBlockNumber] = useState<number | undefined>();
 
   useEffect(() => {
     const fetchBlockNumber = async () => {

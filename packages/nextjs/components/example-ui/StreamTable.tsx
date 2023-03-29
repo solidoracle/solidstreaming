@@ -3,7 +3,7 @@ import { BigNumber } from "ethers";
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
-import { useAnimationConfig, useScaffoldContractRead, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
+import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 
 export const StreamTable = () => {
   const [open, setOpen] = useState(false);
@@ -11,8 +11,10 @@ export const StreamTable = () => {
   const { data: stream5, isLoading: isStreamsLoading } = useScaffoldContractRead({
     contractName: "SolidStreaming",
     functionName: "streams",
-    args: [5],
+    args: [BigNumber.from(5)],
   });
+
+  console.log(isStreamsLoading);
 
   console.log("streamID", stream5);
 
@@ -34,12 +36,12 @@ export const StreamTable = () => {
               <div className="flex items-center">
                 <div className="flex flex-col mr-4">
                   <div className="text-2xs font-bold">Sender:</div>
-                  <Address address={stream5[0]} customClass="text-sm" />
+                  <Address address={!!stream5 ? stream5[0] : ""} customClass="text-sm" />
                 </div>
                 <ChevronDoubleRightIcon className="h-6 w-6 text-purple-500" />
                 <div className="flex flex-col ml-4">
                   <div className="text-2xs font-bold">Receiver:</div>
-                  <Address address={stream5[1]} customClass="text-sm" />
+                  <Address address={!!stream5 ? stream5[1] : ""} customClass="text-sm" />
                 </div>
               </div>
 

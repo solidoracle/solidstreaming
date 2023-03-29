@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
+// import { ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
 import { CommonInputProps, InputBase, SIGNED_NUMBER_REGEX } from "~~/components/scaffold-eth";
 import { useAppStore } from "~~/services/store/store";
 
@@ -44,6 +44,7 @@ export const EtherInput = ({ value, name, placeholder, onChange, customClass }: 
   const [transitoryDisplayValue, setTransitoryDisplayValue] = useState<string>();
   const ethPrice = useAppStore(state => state.ethPrice);
   const [usdMode, setUSDMode] = useState(false);
+  setUSDMode(false);
 
   // The displayValue is derived from the ether value that is controlled outside of the component
   // In usdMode, it is converted to its usd value, in regular mode it is unaltered
@@ -83,9 +84,9 @@ export const EtherInput = ({ value, name, placeholder, onChange, customClass }: 
     onChange(newEthValue);
   };
 
-  const toggleMode = () => {
-    setUSDMode(!usdMode);
-  };
+  // const toggleMode = () => {
+  //   setUSDMode(!usdMode);
+  // };
 
   return (
     <InputBase

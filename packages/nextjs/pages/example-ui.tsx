@@ -1,6 +1,6 @@
 import Head from "next/head";
 import type { NextPage } from "next";
-import { ContractData } from "~~/components/example-ui/ContractData";
+// import { ContractData } from "~~/components/example-ui/ContractData";
 import { ContractInteraction } from "~~/components/example-ui/ContractInteraction";
 import { StreamTable } from "~~/components/example-ui/StreamTable";
 
