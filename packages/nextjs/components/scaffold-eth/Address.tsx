@@ -14,12 +14,13 @@ type TAddressProps = {
   blockExplorer?: string;
   disableAddressLink?: boolean;
   format?: "short" | "long";
+  customClass?: string;
 };
 
 /**
  * Displays an address (or ENS) with a Blockie image and option to copy address.
  */
-export const Address = ({ address, blockExplorer, disableAddressLink, format }: TAddressProps) => {
+export const Address = ({ address, blockExplorer, disableAddressLink, format, customClass }: TAddressProps) => {
   const [ens, setEns] = useState<string | null>();
   const [ensAvatar, setEnsAvatar] = useState<string | null>();
   const [addressCopied, setAddressCopied] = useState(false);
@@ -78,9 +79,14 @@ export const Address = ({ address, blockExplorer, disableAddressLink, format }: 
         )}
       </div>
       {disableAddressLink ? (
-        <span className="ml-1.5 text-lg font-normal">{displayAddress}</span>
+        <span className={`ml-1.5 text-lg font-normal ${customClass}`}>{displayAddress}</span>
       ) : (
-        <a className="ml-1.5 text-lg font-normal" target="_blank" href={explorerLink} rel="noopener noreferrer">
+        <a
+          className={`ml-1.5 text-lg font-normal ${customClass}`}
+          target="_blank"
+          href={explorerLink}
+          rel="noopener noreferrer"
+        >
           {displayAddress}
         </a>
       )}

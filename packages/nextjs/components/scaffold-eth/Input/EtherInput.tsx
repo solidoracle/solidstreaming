@@ -40,7 +40,7 @@ function displayValueToEtherValue(usdMode: boolean, displayValue: string, ethPri
  *
  * onChange will always be called with the value in ETH
  */
-export const EtherInput = ({ value, name, placeholder, onChange }: CommonInputProps) => {
+export const EtherInput = ({ value, name, placeholder, onChange, customClass }: CommonInputProps) => {
   const [transitoryDisplayValue, setTransitoryDisplayValue] = useState<string>();
   const ethPrice = useAppStore(state => state.ethPrice);
   const [usdMode, setUSDMode] = useState(false);
@@ -93,16 +93,17 @@ export const EtherInput = ({ value, name, placeholder, onChange }: CommonInputPr
       value={displayValue}
       placeholder={placeholder}
       onChange={handleChangeNumber}
+      customClass={customClass}
       prefix={<span className="pl-4 -mr-2 text-primary self-center">{usdMode ? "$" : "Ξ"}</span>}
-      suffix={
-        <button
-          className="btn btn-primary h-[2.2rem] min-h-[2.2rem]"
-          onClick={toggleMode}
-          disabled={!usdMode && !ethPrice}
-        >
-          <ArrowsRightLeftIcon className="h-3 w-3 cursor-pointer" aria-hidden="true" />
-        </button>
-      }
+      // suffix={
+      //   <button
+      //     className="btn btn-primary h-[2.2rem] min-h-[2.2rem]"
+      //     onClick={toggleMode}
+      //     disabled={!usdMode && !ethPrice}
+      //   >
+      //     <ArrowsRightLeftIcon className="h-3 w-3 cursor-pointer" aria-hidden="true" />
+      //   </button>
+      // }
     />
   );
 };

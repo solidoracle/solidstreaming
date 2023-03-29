@@ -5,6 +5,7 @@ export interface CommonInputProps<T = string> {
   onChange: (newValue: T) => void;
   name?: string;
   placeholder?: string;
+  customClass?: string;
 }
 
 export enum IntegerVariant {
