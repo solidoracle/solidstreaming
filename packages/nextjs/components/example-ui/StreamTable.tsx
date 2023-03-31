@@ -105,7 +105,7 @@ export const StreamTable = ({ blocknumber: blockNumber, stream }: SendStreamProp
             <div className="flex my-2 items-center justify-between w-full">
               <div>
                 <span className="text-xs inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-200">
-                  {progress < 100 ? "streaming progress" : "streaming complete"}{" "}
+                  {progress < 100 ? "streaming in progress" : "streaming complete"}{" "}
                 </span>
               </div>
               <div className="text-right">
