@@ -42,14 +42,6 @@ export const SendStream = ({ blocknumber: blockNumber }: SendStreamProps) => {
     setPaymentPerBlock(parsedValue);
   }
 
-  interface ScaffoldContractWriteOptions {
-    contractName: string;
-    functionName: string;
-    args: (string | BigNumber | TimeFrame)[];
-    value: string;
-    onSuccess: () => void;
-  }
-
   const { writeAsync, isLoading } = useScaffoldContractWrite({
     contractName: "SolidStreaming",
     functionName: "start",
