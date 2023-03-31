@@ -54,22 +54,7 @@ contract SolidStreaming {
 		return streamId++;
 	}
 
-	// function adjust(uint256 streamId, uint256 amount, bool increase) public payable {
-	// 	if (streams[streamId].sender != msg.sender) revert Unauthorized();
 
-	// 	if (increase) {
-	// 		unchecked {
-	// 			streams[streamId].balance += amount;
-	// 		}
-	// 	} else {
-	// 		unchecked {
-	// 			streams[streamId].balance -= amount;
-	// 		}
-	// 		(bool success, ) = streams[streamId].receiver.call{value:  amount}('');
-	// 		require(success, 'Adjustment failed.');
-	// 	}
-
-	// }
 
 	function withdraw(uint256 streamId) public payable {
 		if (streams[streamId].receiver != msg.sender) revert Unauthorized();
@@ -85,19 +70,7 @@ contract SolidStreaming {
 		require(success, 'Withdraw failed.');
 	}
 
-	// /// @notice Withdraw any excess in the locked balance, only available to the creator of the stream after it's no longer active
-	// function refund(uint256 streamId) public payable {
-	// 	if (streams[streamId].sender != msg.sender) revert Unauthorized();
-	// 	if (streams[streamId].timeframe.stopBlock > block.number) revert StreamStillLive();
 
-	// 	uint256 balance = balanceOf(streamId, msg.sender);
-
-	// 	streams[streamId].balance -= balance;
-
-	// 	(bool success, ) = msg.sender.call{value:  balance}('');
-	// 	require(success, 'Refund failed.');
-	// 	}
-	
 
 	/*//////////////////////////////////////////////////////////////
 								HELPERS
