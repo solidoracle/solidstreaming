@@ -31,6 +31,7 @@ contract SolidStreaming {
 	uint256 internal streamId = 1;
 	uint256 public nonce = 1;
 	mapping(uint256 => Stream) public streams;
+	Stream[] public streamArray;
 
     /*///////////////////////////////////////////////////////////////
                         STREAM & WITHDRAWAL LOGIC
@@ -48,29 +49,33 @@ contract SolidStreaming {
 		});
 
 		streams[streamId] = stream;
+		streamArray.push(stream);
 
 		return streamId++;
 	}
 
-	function adjust(uint256 streamId, uint256 amount, bool increase) public payable {
-		if (streams[streamId].sender != msg.sender) revert Unauthorized();
+	// function adjust(uint256 streamId, uint256 amount, bool increase) public payable {
+	// 	if (streams[streamId].sender != msg.sender) revert Unauthorized();
 
-		if (increase) {
-			unchecked {
-				streams[streamId].balance += amount;
-			}
-		} else {
-			unchecked {
-				streams[streamId].balance -= amount;
-			}
-		}
+	// 	if (increase) {
+	// 		unchecked {
+	// 			streams[streamId].balance += amount;
+	// 		}
+	// 	} else {
+	// 		unchecked {
+	// 			streams[streamId].balance -= amount;
+	// 		}
+	// 		(bool success, ) = streams[streamId].receiver.call{value:  amount}('');
+	// 		require(success, 'Adjustment failed.');
+	// 	}
 
-	}
+	// }
 
 	function withdraw(uint256 streamId) public payable {
 		if (streams[streamId].receiver != msg.sender) revert Unauthorized();
 
 		uint256 balance = balanceOf(streamId, msg.sender);
+		if (balance == 0) revert ZeroBalance();
 
 		unchecked {
 			streams[streamId].withdrawnBalance += balance;
@@ -80,21 +85,18 @@ contract SolidStreaming {
 		require(success, 'Withdraw failed.');
 	}
 
-	/// @notice Withdraw any excess in the locked balance, only available to the creator of the stream after it's no longer active
-	function refund(uint256 streamId) public payable {
-		if (streams[streamId].sender != msg.sender) revert Unauthorized();
-		if (streams[streamId].timeframe.stopBlock > block.number) revert StreamStillLive();
+	// /// @notice Withdraw any excess in the locked balance, only available to the creator of the stream after it's no longer active
+	// function refund(uint256 streamId) public payable {
+	// 	if (streams[streamId].sender != msg.sender) revert Unauthorized();
+	// 	if (streams[streamId].timeframe.stopBlock > block.number) revert StreamStillLive();
 
-		uint256 balance = balanceOf(streamId, msg.sender);
+	// 	uint256 balance = balanceOf(streamId, msg.sender);
 
-		streams[streamId].balance -= balance;
+	// 	streams[streamId].balance -= balance;
 
-		(bool success, ) = msg.sender.call{value:  balance}('');
-		require(success, 'Refund failed.');
-
-		delete streams[streamId];
-
-		}
+	// 	(bool success, ) = msg.sender.call{value:  balance}('');
+	// 	require(success, 'Refund failed.');
+	// 	}
 	
 
 	/*//////////////////////////////////////////////////////////////
@@ -122,9 +124,14 @@ contract SolidStreaming {
 		return 0;
 	}
 
+	function fetchAllStreams() public view returns(Stream[] memory) {
+        return streamArray;
+    }
+
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
+	error ZeroBalance();
 	error Unauthorized();
 	error ZeroAddressSender();
 	error StreamStillLive();

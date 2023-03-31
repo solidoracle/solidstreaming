@@ -1,53 +1,83 @@
+import { useEffect, useState } from "react";
 import Head from "next/head";
-import Link from "next/link";
 import type { NextPage } from "next";
-import { BugAntIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import ReactPaginate from "react-paginate";
+import { goerli } from "wagmi/chains";
+import { SendStream } from "~~/components/example-ui/SendStream";
+import { StreamTable } from "~~/components/example-ui/StreamTable";
+import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { getLocalProvider } from "~~/utils/scaffold-eth";
 
 const Home: NextPage = () => {
+  const [blockNumber, setBlockNumber] = useState<number | undefined>();
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const { data: streamArray } = useScaffoldContractRead({
+    contractName: "SolidStreaming",
+    functionName: "fetchAllStreams",
+  });
+
+  const PER_PAGE = 4;
+  const offset = currentPage * PER_PAGE;
+  const pageCount = Math.ceil(streamArray?.length / PER_PAGE);
+  const paginatedStreams = streamArray
+    ?.slice()
+    .reverse()
+    .slice(offset, offset + PER_PAGE);
+
+  function handlePageClick({ selected: selectedPage }) {
+    setCurrentPage(selectedPage);
+  }
+
+  useEffect(() => {
+    const fetchBlockNumber = async () => {
+      const provider = getLocalProvider(goerli);
+      const currentBlockNumber = await provider?.getBlockNumber();
+      setBlockNumber(currentBlockNumber);
+    };
+    // Call the fetchBlockNumber function every 15 seconds
+    const interval = setInterval(() => {
+      fetchBlockNumber();
+    }, 15000);
+
+    // Call the fetchBlockNumber function immediately on component mount
+    fetchBlockNumber();
+
+    // Cleanup the interval on component unmount
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <>
       <Head>
-        <title>Scaffold-eth App</title>
+        <title>Scaffold-eth Example Ui</title>
         <meta name="description" content="Created with 🏗 scaffold-eth" />
+        {/* We are importing the font this way to lighten the size of SE2. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree&display=swap" rel="stylesheet" />
       </Head>
+      <div className="grid lg:grid-cols-2 flex-grow" data-theme="exampleUi">
+        <SendStream blocknumber={blockNumber} />
+        <div className="flex bg-base-200 relative justify-center items-center min-w-[40rem] my-4">
+          <div className="flex flex-col w-10/12 ">
+            <div className="mb-2 ml-1.5 text-sm text-gray-700 font-semibold"> Latest Streams</div>
+            {paginatedStreams?.slice().map(stream => (
+              <StreamTable key={stream.id} blocknumber={blockNumber} stream={stream} />
+            ))}
 
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center mb-8">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">scaffold-eth 2</span>
-          </h1>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold">packages/nextjs/pages/index.tsx</code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract <code className="italic bg-base-300 text-base font-bold">YourContract.sol</code> in{" "}
-            <code className="italic bg-base-300 text-base font-bold">packages/hardhat/contracts</code>
-          </p>
-        </div>
-
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contract
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <SparklesIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Experiment with{" "}
-                <Link href="/example-ui" passHref className="link">
-                  Example UI
-                </Link>{" "}
-                to build your own UI.
-              </p>
+            <div className="flex justify-center mt-5">
+              <ReactPaginate
+                previousLabel={"←"}
+                nextLabel={"→"}
+                pageCount={pageCount}
+                onPageChange={handlePageClick}
+                previousLinkClassName={"font-bold"}
+                nextLinkClassName={"font-bold"}
+                activeClassName={"text-violet-700 bg-white rounded-md px-2 font-semibold"}
+                className="flex justify-between w-1/5 text-white bg-violet-500 rounded-md px-2 py-1"
+              />
             </div>
           </div>
         </div>

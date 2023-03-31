@@ -30,7 +30,17 @@
   },
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
+    "@types/react": "^18.0.9",
+    "@types/react-dom": "^18",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3"
+  },
+  "dependencies": {
+    "daisyui": "^2.51.5",
+    "rc-pagination": "^3.3.1",
+    "react": "^18.2.0",
+    "react-daisyui": "^3.0.3",
+    "react-dom": "^18.2.0",
+    "react-paginate": "^8.1.5"
   }
 }

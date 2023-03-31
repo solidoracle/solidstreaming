@@ -1,100 +1,144 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Spinner } from "../Spinner";
 import { BigNumber } from "ethers";
+import { ethers } from "ethers";
+import { useSigner } from "wagmi";
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import { SendStreamProps } from "~~/components/example-ui/SendStream";
 import { Address } from "~~/components/scaffold-eth";
-import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
-export const StreamTable = () => {
+export const StreamTable = ({ blocknumber: blockNumber, stream }: SendStreamProps) => {
   const [open, setOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const { data: signer } = useSigner();
 
-  const { data: stream5, isLoading: isStreamsLoading } = useScaffoldContractRead({
+  const { writeAsync: withdraw, isLoading } = useScaffoldContractWrite({
     contractName: "SolidStreaming",
-    functionName: "streams",
-    args: [BigNumber.from(5)],
+    functionName: "withdraw",
+    args: [stream?.id],
+    onSuccess: () => {
+      console.log("withdrawn");
+    },
   });
 
-  console.log(isStreamsLoading);
+  function calculateAndSetProgress(currentBlock: number, startBlock: BigNumber, stopBlock: BigNumber) {
+    const startBlockNumber = Number(startBlock.toString());
+    const stopBlockNumber = Number(stopBlock.toString());
 
-  console.log("streamID", stream5);
+    if (currentBlock > stopBlockNumber) {
+      setProgress(100);
+    } else {
+      const progress = ((currentBlock - startBlockNumber) / (stopBlockNumber - startBlockNumber)) * 100;
+      console.log(progress, "progress");
+
+      setProgress(progress);
+    }
+  }
+
+  useEffect(() => {
+    calculateAndSetProgress(blockNumber, stream?.timeframe.startBlock, stream?.timeframe.stopBlock);
+  }, [blockNumber]);
+
+  function toggle() {
+    calculateAndSetProgress(blockNumber, stream?.timeframe.startBlock, stream?.timeframe.stopBlock);
+    setOpen(!open);
+  }
 
   return (
-    <div className="flex bg-base-200 relative justify-center items-center min-w-[40rem]">
-      <div className="flex flex-col w-10/12 ">
-        <div className="mb-3 ml-1 text-sm text-gray-700"> Latest Streams</div>
+    <div className="my-2 px-3 pt-3 bg-base-200 rounded-2xl drop-shadow-2xl border-2 border-purple-500">
+      <div className="flex justify-between">
+        <div>
+          <span
+            className={`text-xs rounded-2xl p-1 px-2 ${
+              progress === 100 ? "text-green-500 border border-green-500 bg-inherit" : "text-white bg-green-500"
+            }`}
+          >
+            {progress < 100 ? "ACTIVE" : "COMPLETE"}
+          </span>{" "}
+          <label className="label">
+            <span className="text-xl font-bold">
+              ID #{!!stream ? Number(stream?.id).toString().padStart(3, "0") : "000"}
+            </span>
+          </label>
+        </div>
 
-        <div className="px-3 pt-3 bg-base-200 rounded-2xl drop-shadow-2xl border-2 border-purple-500">
-          <div className="flex justify-between">
-            <div className="">
-              <span className="text-xs text-white bg-green-500 rounded-2xl p-1 px-2 ">ACTIVE</span>{" "}
-              <label className="label">
-                <span className="text-2xl font-bold">ID #001</span>
-              </label>
+        <div className="flex-col">
+          <div className="flex items-center">
+            <div className="flex flex-col mr-4">
+              <div className="text-2xs font-bold">Sender:</div>
+              <Address address={!!stream ? stream?.sender.toString() : ""} customClass="text-sm" />
             </div>
+            <ChevronDoubleRightIcon className="h-6 w-6 text-purple-500" />
+            <div className="flex flex-col ml-4">
+              <div className="text-2xs font-bold">Receiver:</div>
+              <Address address={!!stream ? stream?.receiver : ""} customClass="text-sm" />
+            </div>
+          </div>
 
-            <div className="flex-col">
-              <div className="flex items-center">
-                <div className="flex flex-col mr-4">
-                  <div className="text-2xs font-bold">Sender:</div>
-                  <Address address={!!stream5 ? stream5[0] : ""} customClass="text-sm" />
-                </div>
-                <ChevronDoubleRightIcon className="h-6 w-6 text-purple-500" />
-                <div className="flex flex-col ml-4">
-                  <div className="text-2xs font-bold">Receiver:</div>
-                  <Address address={!!stream5 ? stream5[1] : ""} customClass="text-sm" />
-                </div>
+          <div className="flex justify-center text-xs italic mt-1">
+            <div>
+              Streaming {!!stream ? ethers.utils.formatEther(stream?.paymentPerBlock.toString()) : "0.0"} ETH per block
+            </div>
+          </div>
+        </div>
+        <div className="">
+          <button
+            className="btn btn-xs bg-transparent my-4 border-1 border-purple-500 hover:bg-violet-500"
+            onClick={() => toggle()}
+          >
+            {!open ? (
+              <ChevronDownIcon className="h-5 w-5 text-black hover:text-white" />
+            ) : (
+              <ChevronUpIcon className="h-5 w-5 text-black hover:text-white" />
+            )}{" "}
+          </button>
+        </div>
+      </div>
+      {open ? (
+        <div
+          className="flex flex-row pt-1 w-full justify-between items-center 
+            "
+        >
+          <div className="flex-col w-full mr-7 justify-center items-center">
+            <div className="flex my-2 items-center justify-between w-full">
+              <div>
+                <span className="text-xs inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-200">
+                  {progress < 100 ? "streaming progress" : "streaming complete"}{" "}
+                </span>
               </div>
-
-              <div className="flex justify-center text-xs italic mt-1">
-                <div>Streaming 1.0 ETH per Block</div>
+              <div className="text-right">
+                <span className="text-xs font-semibold inline-block text-green-600">{progress}%</span>
               </div>
             </div>
-            <div className="">
+            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200 w-full">
+              <div
+                style={{ width: `${progress}%` }}
+                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"
+              ></div>
+            </div>
+          </div>
+
+          <div className="flex-col justify-center items-center ">
+            <div className="flex items-center justify-center w-full pb-2">
               <button
-                className="btn btn-xs bg-gray-900 my-4 border-1 border-purple-500 hover:bg-violet-500"
-                onClick={() => setOpen(!open)}
+                className="btn border-1 bg-purple-500 hover:bg-violet-500 text-white border-gray-400"
+                onClick={() => withdraw()}
+                disabled={signer._address.toString() !== stream?.receiver}
               >
-                <ChevronDownIcon className="h-5 w-5 text-white " />
+                {isLoading ? (
+                  <div className="flex justify-center">
+                    <Spinner />
+                  </div>
+                ) : (
+                  "Withdraw"
+                )}
               </button>
             </div>
           </div>
-          {open ? (
-            <div className="flex flex-col pt-1 w-full justify-center items-center">
-              <div className="flex-col w-1/2 justify-center items-center">
-                <div className="flex my-2 items-center justify-between w-full">
-                  <div>
-                    <span className="text-2xs inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-200">
-                      streaming progress
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-semibold inline-block text-green-600">30%</span>
-                  </div>
-                </div>
-                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200 w-full">
-                  <div
-                    style={{ width: "30%" }}
-                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"
-                  ></div>
-                </div>
-              </div>
-              <div className="flex-col w-full justify-center items-center ">
-                <div className="flex m-2 items-center justify-between w-full px-14 pb-2">
-                  <button className="btn border-1 bg-purple-500 hover:bg-violet-600 text-white border-gray-400">
-                    Adjust
-                  </button>
-                  <button className="btn border-1 bg-purple-500 hover:bg-violet-500 text-white border-gray-400">
-                    Withdraw
-                  </button>
-                  <button className="btn border-1 bg-purple-500 hover:bg-violet-500 text-white border-gray-400">
-                    Refund
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : null}
         </div>
-      </div>
+      ) : null}
     </div>
   );
 };

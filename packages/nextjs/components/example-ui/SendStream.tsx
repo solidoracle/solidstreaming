@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { BigNumber, ethers } from "ethers";
-import { goerli } from "wagmi/chains";
+import { BigNumber, ethers, utils } from "ethers";
 import { Spinner } from "~~/components/Spinner";
 import { AddressInput } from "~~/components/scaffold-eth/Input/AddressInput";
 import { EtherInput } from "~~/components/scaffold-eth/Input/EtherInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { getLocalProvider } from "~~/utils/scaffold-eth";
 
 interface TimeFrame {
   startBlock: BigNumber;
@@ -19,7 +17,12 @@ enum FlowRate {
   SECOND = "/ second",
 }
 
-export const ContractInteraction = () => {
+export interface SendStreamProps {
+  blocknumber?: number;
+  stream?: any;
+}
+
+export const SendStream = ({ blocknumber: blockNumber }: SendStreamProps) => {
   const [receiver, setReceiver] = useState("");
   const [depositAmount, setDepositAmount] = useState("");
   const [timeframe, setTimeframe] = useState<TimeFrame>({
@@ -27,29 +30,8 @@ export const ContractInteraction = () => {
     stopBlock: BigNumber.from(0),
   });
   const [paymentPerBlockString, setPaymentPerBlockString] = useState("");
-
   const [paymentPerBlock, setPaymentPerBlock] = useState<BigNumber>(BigNumber.from(0));
-  const [blockNumber, setBlockNumber] = useState<number | undefined>();
-
-  useEffect(() => {
-    const fetchBlockNumber = async () => {
-      const provider = getLocalProvider(goerli);
-      const currentBlockNumber = await provider?.getBlockNumber();
-      setBlockNumber(currentBlockNumber);
-    };
-    // Call the fetchBlockNumber function every 15 seconds
-    const interval = setInterval(() => {
-      fetchBlockNumber();
-    }, 15000);
-
-    // Call the fetchBlockNumber function immediately on component mount
-    fetchBlockNumber();
-
-    // Cleanup the interval on component unmount
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+  const [duration, setDuration] = useState<BigNumber>(BigNumber.from(0));
 
   function formatAndSetPaymentPerBlock(value: string) {
     if (value === "") {
@@ -69,27 +51,50 @@ export const ContractInteraction = () => {
       setReceiver("");
       setDepositAmount("");
       setPaymentPerBlock(BigNumber.from(0));
+      setPaymentPerBlockString("");
     },
   });
 
+  useEffect(() => {
+    const parsedDepositAmountBN = utils.parseEther(Number(depositAmount).toString());
+    const duration = paymentPerBlock.gt(BigNumber.from(0))
+      ? parsedDepositAmountBN.div(paymentPerBlock)
+      : BigNumber.from(0);
+
+    const mod = paymentPerBlock.gt(BigNumber.from(0))
+      ? parsedDepositAmountBN.div(paymentPerBlock).mod(BigNumber.from(2))
+      : BigNumber.from(0);
+
+    if (mod.gt(BigNumber.from(0))) {
+      setDuration(duration.add(BigNumber.from(1)));
+    } else {
+      setDuration(duration);
+    }
+  }, [depositAmount, paymentPerBlock]);
+
+  useEffect(() => {
+    if (blockNumber) {
+      setTimeframe({
+        startBlock: BigNumber.from(blockNumber),
+        stopBlock: BigNumber.from(blockNumber).add(duration),
+      });
+    }
+  }, [blockNumber, duration]);
+
   function sendStream() {
-    const duration = Number(depositAmount) / Number(ethers.utils.formatEther(paymentPerBlock));
-
-    const timeFrame: TimeFrame = {
-      startBlock: BigNumber.from(blockNumber),
-      stopBlock: BigNumber.from(blockNumber).add(BigNumber.from(duration)),
-    };
-    setTimeframe(timeFrame);
-
+    if (paymentPerBlock.gt(utils.parseEther(depositAmount))) {
+      alert("Deposit amount must be greater than flow rate");
+      return;
+    }
     writeAsync();
   }
 
   return (
     <div className="flex bg-purple-200 relative pb-10 justify-center items-center">
-      <div className="flex flex-col w-10/12">
+      <div className="flex flex-col w-10/12 mt-8">
         <div className="flex flex-col px-7 pb-8 pt-6 bg-base-200 opacity-80 rounded-2xl drop-shadow-2xl border-2 border-primary">
           <div className="mb-5">
-            <span className="text-l text-white font-bold bg-purple-500 rounded-2xl p-3 ">Send Stream</span>{" "}
+            <span className="text-l text-white font-bold bg-purple-500 rounded-2xl p-3">Send Stream</span>{" "}
           </div>
 
           <div className="form-control mb-3">
@@ -129,8 +134,12 @@ export const ContractInteraction = () => {
                 placeholder="0.0"
                 value={paymentPerBlockString}
                 onChange={value => {
-                  formatAndSetPaymentPerBlock(value);
-                  setPaymentPerBlockString(value);
+                  if (depositAmount != "") {
+                    formatAndSetPaymentPerBlock(value);
+                    setPaymentPerBlockString(value);
+                  } else {
+                    setPaymentPerBlockString("");
+                  }
                 }}
               />
 

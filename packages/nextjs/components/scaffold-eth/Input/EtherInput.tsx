@@ -44,7 +44,6 @@ export const EtherInput = ({ value, name, placeholder, onChange, customClass }: 
   const [transitoryDisplayValue, setTransitoryDisplayValue] = useState<string>();
   const ethPrice = useAppStore(state => state.ethPrice);
   const [usdMode, setUSDMode] = useState(false);
-  setUSDMode(false);
 
   // The displayValue is derived from the ether value that is controlled outside of the component
   // In usdMode, it is converted to its usd value, in regular mode it is unaltered
