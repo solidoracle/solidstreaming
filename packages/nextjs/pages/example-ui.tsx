@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
+import { NextPage } from "next";
 import ReactPaginate from "react-paginate";
 import { goerli } from "wagmi/chains";
 import { SendStream } from "~~/components/example-ui/SendStream";
@@ -17,7 +18,7 @@ const ExampleUI: NextPage = () => {
   });
 
   const PER_PAGE = 4;
-  const offset = currentPage * PER_PAGE;
+  const offset = currentPage * PER_PAGE!;
   const pageCount = Math.ceil(streamArray?.length / PER_PAGE);
   const paginatedStreams = streamArray
     ?.slice()
