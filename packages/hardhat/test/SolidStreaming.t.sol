@@ -53,6 +53,9 @@ function testStreamStart() public {
     assertEq(streamTimeframe.startBlock, timeframe.startBlock);
     assertEq(streamTimeframe.stopBlock, timeframe.stopBlock);
 }
+function testBalanceCalculationAndWithdrawals() public {}
+
+
 
 function testNonRecipiantCannotWithdraw() public {
     uint256 streamId = solidStreaming.start{value: 0.5 ether}(
@@ -67,10 +70,9 @@ function testNonRecipiantCannotWithdraw() public {
     vm.expectRevert(abi.encodeWithSignature('Unauthorized()'));
     solidStreaming.withdraw(streamId);
 
-	assertEq(address(solidStreaming), 0.5 ether);
+	    assertEq(address(solidStreaming).balance, 0.5 ether);
 		assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0);
 		assertEq(solidStreaming.balanceOf(streamId, address(this)), 0.5 ether);
-
 }
 
 
