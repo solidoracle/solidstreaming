@@ -38,11 +38,11 @@ export const StreamTable = ({ blocknumber: blockNumber, stream }: SendStreamProp
   }
 
   useEffect(() => {
-    calculateAndSetProgress(blockNumber, stream?.timeframe.startBlock, stream?.timeframe.stopBlock);
+    calculateAndSetProgress(blockNumber!, stream?.timeframe.startBlock, stream?.timeframe.stopBlock);
   }, [blockNumber]);
 
   function toggle() {
-    calculateAndSetProgress(blockNumber, stream?.timeframe.startBlock, stream?.timeframe.stopBlock);
+    calculateAndSetProgress(blockNumber!, stream?.timeframe.startBlock, stream?.timeframe.stopBlock);
     setOpen(!open);
   }
 
@@ -125,7 +125,7 @@ export const StreamTable = ({ blocknumber: blockNumber, stream }: SendStreamProp
               <button
                 className="btn border-1 bg-purple-500 hover:bg-violet-500 text-white border-gray-400"
                 onClick={() => withdraw()}
-                disabled={signer._address.toString() !== stream?.receiver}
+                disabled={signer?._address.toString() !== stream?.receiver}
               >
                 {isLoading ? (
                   <div className="flex justify-center">
