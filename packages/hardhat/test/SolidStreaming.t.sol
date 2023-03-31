@@ -21,23 +21,59 @@ function testNonce() public {
 }
 
 function testStreamStart() public {
+    SolidStreaming.Timeframe memory timeframe = SolidStreaming.Timeframe({
+        startBlock: block.number,
+        stopBlock: block.number + 5
+    });
 
-console.log("HELLO");
+    uint256 streamId = solidStreaming.start{value: 0.5 ether}(
+        address(receiver),
+        timeframe,
+        0.1 ether
+    );
 
-SolidStreaming.Timeframe memory timeframe = SolidStreaming.Timeframe({
-    startBlock: block.number,
-    stopBlock: block.number + 5
-});
+    assertEq(streamId, 1);
+    assertEq(address(solidStreaming).balance, 0.5 ether);
 
+    (
+        uint256 id,
+        address sender,
+        address streamReceiver,
+        uint256 balance,
+        uint256 withdrawnBalance,
+        uint256 paymentPerBlock,
+        SolidStreaming.Timeframe memory streamTimeframe
+    ) = solidStreaming.streams(streamId);
 
-uint256 streamId = solidStreaming.start{value: 0.5 ether}(
-    address(receiver),
-    timeframe,
-    0.1 ether
-);
+    assertEq(sender, address(this));
+    assertEq(streamReceiver, address(receiver));
+    assertEq(balance, 0.5 ether);
+    assertEq(withdrawnBalance, 0);
+    assertEq(paymentPerBlock, 0.1 ether);
+    assertEq(streamTimeframe.startBlock, timeframe.startBlock);
+    assertEq(streamTimeframe.stopBlock, timeframe.stopBlock);
+}
 
+function testNonRecipiantCannotWithdraw() public {
+    uint256 streamId = solidStreaming.start{value: 0.5 ether}(
+        address(receiver),
+        SolidStreaming.Timeframe({ startBlock: block.number, stopBlock: block.number + 10 }),
+        0.1 ether
+    );
+
+    assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0);
+    assertEq(solidStreaming.balanceOf(streamId, address(this)), 0.5 ether);
+
+    vm.expectRevert(abi.encodeWithSignature('Unauthorized()'));
+    solidStreaming.withdraw(streamId);
+
+	assertEq(address(solidStreaming), 0.5 ether);
+		assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0);
+		assertEq(solidStreaming.balanceOf(streamId, address(this)), 0.5 ether);
 
 }
 
 
 }
+
+
