@@ -1,6 +1,7 @@
 # 🔮💧SolidStreaming || 🏗 Scaffold-Eth 2
 
-SolidStreaming allows you to stream goETH on a per block basis.
+SolidStreaming allows you to stream goETH on a per block basis. The video walkthrough:
+https://www.loom.com/share/9beeda651140483bbcaaae5c83fc8392
 
 ## Deployment
 
