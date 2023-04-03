@@ -48,7 +48,7 @@ export const StreamTable = ({ blocknumber: blockNumber, stream }: SendStreamProp
 
   return (
     <div className="my-2 px-3 pt-3 bg-base-200 rounded-2xl drop-shadow-2xl border-2 border-purple-500">
-      <div className="flex justify-between">
+      <div className="flex justify-between mb-2">
         <div>
           <span
             className={`text-xs rounded-2xl p-1 px-2 ${
