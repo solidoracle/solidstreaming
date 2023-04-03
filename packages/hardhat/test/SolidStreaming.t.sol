@@ -5,8 +5,7 @@ import "forge-std/Test.sol";
 import "../contracts/SolidStreaming.sol";
 import { Vm } from 'forge-std/Vm.sol';
 
-
-contract CounterTest is Test {
+contract SolidStreamingTest is Test {
     SolidStreaming public solidStreaming;
     address receiver = address(1);
 
@@ -53,11 +52,48 @@ function testStreamStart() public {
     assertEq(streamTimeframe.startBlock, timeframe.startBlock);
     assertEq(streamTimeframe.stopBlock, timeframe.stopBlock);
 }
-function testBalanceCalculationAndWithdrawals() public {}
+function testBalanceCalculationAndWithdrawals() public {
+    uint256 streamId = solidStreaming.start{value: 0.5 ether}(
+        address(receiver),
+        SolidStreaming.Timeframe({ startBlock: block.number, stopBlock: block.number + 10 }),
+        0.1 ether
+    );
 
 
+    assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0);
+    assertEq(solidStreaming.balanceOf(streamId, address(this)), 0.5 ether);
 
-function testNonRecipiantCannotWithdraw() public {
+    vm.roll(block.number + 1);
+
+    assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0.1 ether);
+    assertEq(solidStreaming.balanceOf(streamId, address(this)), 0.4 ether);
+
+    vm.roll(block.number + 1);
+
+    assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0.2 ether);
+    assertEq(solidStreaming.balanceOf(streamId, address(this)), 0.3 ether);
+
+
+    vm.startPrank(address(receiver));
+
+    solidStreaming.withdraw(streamId);
+
+    assertEq(address(receiver).balance, 0.2 ether);
+    assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0);
+
+    assertEq(address(solidStreaming).balance, 0.3 ether);
+
+    vm.roll(block.number + 3);
+
+    assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0.3 ether);
+    assertEq(solidStreaming.balanceOf(streamId, address(this)), 0);
+
+    solidStreaming.withdraw(streamId);
+    assertEq(address(receiver).balance, 0.5 ether);
+    assertEq(address(solidStreaming).balance, 0);
+}
+
+function testNonRecipientCannotWithdraw() public {
     uint256 streamId = solidStreaming.start{value: 0.5 ether}(
         address(receiver),
         SolidStreaming.Timeframe({ startBlock: block.number, stopBlock: block.number + 10 }),
@@ -74,8 +110,6 @@ function testNonRecipiantCannotWithdraw() public {
 		assertEq(solidStreaming.balanceOf(streamId, address(receiver)), 0);
 		assertEq(solidStreaming.balanceOf(streamId, address(this)), 0.5 ether);
 }
-
-
 }
 
 
