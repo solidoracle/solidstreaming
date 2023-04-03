@@ -52,6 +52,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
+        <link rel="icon" href="/favicon.ico" />
         <title>🔮💧SolidStreaming</title>
         <meta name="description" content="Created with 🏗 scaffold-eth" />
         {/* We are importing the font this way to lighten the size of SE2. */}

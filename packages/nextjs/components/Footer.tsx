@@ -42,7 +42,7 @@ export const Footer = () => {
               </a>
             </div>
             <div>
-              , built using{" "}
+              || built using{" "}
               <a
                 href="https://github.com/solidoracle/solidstreaming"
                 target="_blank"
