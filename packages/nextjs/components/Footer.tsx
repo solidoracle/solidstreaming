@@ -33,7 +33,7 @@ export const Footer = () => {
             <div>
               An experiment by 🔮
               <a
-                href="https://twitter.com/solidroacle"
+                href="https://twitter.com/solidoracle"
                 target="_blank"
                 rel="noreferrer"
                 className="underline underline-offset-2"
